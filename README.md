@@ -1,4 +1,4 @@
-# EuroMillionsPredictAPI
+# EuroMillionsPredictionAPI
 
 bonsoir on est là
 
