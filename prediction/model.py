@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 import preprocess_data as pp
 
 raw_df = pp.create_df("../data/EuroMillions_numbers.csv")
-new_df = pp.add_data(raw_df, 10)
-df = pp.add_binary_winner_column(new_df)
+df = pp.add_data(raw_df, 10)
+pp.add_binary_winner_column(df)
 # print(df.iloc[:50])
 
 X = df[["N1","N2","N3","N4","N5","E1","E2"]]

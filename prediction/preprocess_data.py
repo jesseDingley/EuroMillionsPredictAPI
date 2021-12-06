@@ -7,7 +7,7 @@ This module contains four functions for preparing raw csv data for usage.
     raw_df = create_df("../data/EuroMillions_numbers.csv")
     combination = generate_random_combination()
     new_df = add_data(raw_df, 10)
-    new_df = add_binary_winner_column(new_df)
+    add_binary_winner_column(new_df)
 """
 
 
@@ -79,10 +79,5 @@ def add_binary_winner_column(df):
 
     Args:
         df (pandas.core.frame.DataFrame): dataframe
-
-    Returns:
-        pandas.core.frame.DataFrame: dataframe with new column.    
-
     """
     df["Winner_binary"] = df["Winner"].apply(lambda x: 1 if x >= 1 else 0)
-    return df
