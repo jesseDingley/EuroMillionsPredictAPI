@@ -67,7 +67,9 @@ def add_data(df, nb_new_combinations):
         d = {"Date": "X", "N1": candidate[0], "N2": candidate[1], "N3": candidate[2], "N4": candidate[3], "N5": candidate[4], "E1": candidate[5], "E2": candidate[6], "Winner": 0, "Gain": 0}
         new_line = pd.Series(data = d)
         df = df.append(new_line, ignore_index = True)
-    return df
+
+    # shuffle data and return
+    return df.sample(frac = 1).reset_index(drop = True)
 
 def add_binary_winner_column(df):
     """Adds 'Winner_binary' column to dataframe.
@@ -78,6 +80,25 @@ def add_binary_winner_column(df):
     We replace for example 5 by 1, so we can perform binary classification (combination is winner or not).
 
     Args:
-        df (pandas.core.frame.DataFrame): dataframe
+        df (pandas.core.frame.DataFrame): dataframe.
     """
     df["Winner_binary"] = df["Winner"].apply(lambda x: 1 if x >= 1 else 0)
+
+def preprocess(file_path, nb_new_combinations):
+    """Preprocesses data from raw csv file.
+    
+    Preprocess data with the following pipeline: Create a dataframe from csv, 
+    then Append a fixed number of new combinations to dataframe,
+    then finally add a new column indicating if the combination has one or multiple winners.
+
+    Args:
+        file_path (string): File path of csv.
+        nb_new_combinations (int): number of new combinations to add.
+
+    Returns:
+        pandas.core.frame.DataFrame: preprocessed dataframe.
+    """
+    raw_df = create_df(file_path)
+    df = add_data(raw_df, nb_new_combinations)
+    add_binary_winner_column(df)
+    return df
