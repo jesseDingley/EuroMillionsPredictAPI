@@ -4,18 +4,18 @@ This module contains X functions for preparing, training and testing.
 
     Typical usage example:
 
-    ...
-    ...
-    p = predict_combination(euro_model, {"N1": 0, "N2": 0, "N3": 0, "N4": 0, "N5": 0, "E1": 0, "E2": 0})
+    X_train, X_test, y_train, y_test = split_data(df)
+    model = train(X_train, y_train)
+    f1 = performance_test(model, X_test, y_test)
+    p = predict_combination(model, {"N1": 0, "N2": 0, "N3": 0, "N4": 0, "N5": 0, "E1": 0, "E2": 0})
 """
 
 
 """Imports."""
 import pandas as pd
-import preprocess_data as pp
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score, recall_score
+from sklearn.metrics import f1_score
 
 
 """Hyperparameters."""
@@ -68,6 +68,7 @@ def train(X_train,y_train, num_trees = NUM_TREES):
 
     return model_
 
+
 def performance_test(trained_model, X_test, y_test):
     """Returns F1 score of model on test data.
 
@@ -95,9 +96,3 @@ def predict_combination(trained_model, combination):
     """
     df_combination = pd.DataFrame.from_records(data = [combination])
     return trained_model.predict_proba(df_combination)[0][0]
-
-df = pp.preprocess("../data/EuroMillions_numbers.csv", 10000)
-X_train, X_test, y_train, y_test = split_data(df)
-mymodel = train(X_train, y_train)
-print(performance_test(mymodel, X_test,y_test))
-print(predict_combination(mymodel, {"N1":0, "N2":0, "N3":0, "N4":0, "N5":0, "E1":0, "E2":0}))
