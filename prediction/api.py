@@ -1,10 +1,39 @@
+"""A module for preprocessing raw csv data.
+
+This module contains four functions for preparing raw csv data for usage.
+
+    Typical usage example:
+
+    raw_df = create_df("../data/EuroMillions_numbers.csv")
+    combination = generate_random_combination()
+    new_df = add_data(raw_df, 10)
+    add_binary_winner_column(new_df)
+    df = preprocess("../data/EuroMillions_numbers.csv", 10)
+    comb_dict = combination_array_to_dict(combination)
+"""
+
+
 from fastapi import FastAPI
-from enum import Enum
-from typing import Optional
 from pydantic import BaseModel, Field
 import pandas as pd
+import model 
+import preprocess_data as pp
+
+"""Initalize model."""
+DATA_PATH = "../data/EuroMillions_numbers.csv"
+UPDATED_DATA_PATH = "../data/updated_EuroMillions_numbers.csv"
+random_forest_model = model.train_from_source(DATA_PATH)
 
 app = FastAPI()
+
+class Combination(BaseModel):
+    N1: int = Field(default=1, ge=1, le=50, description="'Numéro' 1 need to be between 1 and 50", title="The first number of the combinaison")
+    N2: int = Field(default=2, ge=1, le=50, description="'Numéro' 2 need to be between 1 and 50", title="The second number of the combinaison")
+    N3: int = Field(default=3, ge=1, le=50, description="'Numéro' 3 need to be between 1 and 50", title="The third number of the combinaison")
+    N4: int = Field(default=4, ge=1, le=50, description="'Numéro' 4 need to be between 1 and 50", title="The fourth number of the combinaison")
+    N5: int = Field(default=5, ge=1, le=50, description="'Numéro' 5 need to be between 1 and 50", title="The fifth number of the combinaison")
+    E1: int = Field(default=1, ge=1, le=12, description="'Etoile' 1 need to be between 1 and 12", title="The first bonus number of the combinaison")
+    E2: int = Field(default=2, ge=1, le=12, description="'Etoile' 2 need to be between 1 and 12", title="The second bonus number of the combinaison")
 
 class Tirage(BaseModel):
     Date: int # à changer pour mettre le type datetime
@@ -32,16 +61,48 @@ def model_to_dataframe(model: Tirage):
     return newDataframe
 
 
-@app.get("/api/model/stupid")
-async def get_model_stupid():
-    """Give the user a joke about probabilities
 
-        Returns:
-            json with shape :
-            `{"Joke message": <string>}`
 
+@app.post("/api/predict")
+async def predict_combination(combination: Combination):
+    """Predicts the probability of a combination being a win.
+
+    Returns two probabilities: 
+    - the probability of the combination winning.
+    - the probability of the combination not winning.
+
+    Args:
+        combination (api.Combination): the combination to make a prediction on.
+    
+    Returns:
+        dict: Dictionary containing the two probabilities (where values are between 0 and 1).
     """
-    return {"Joke message": "When you play, you either win or not. So you have a 50% to chance to win =)"}
+    probability = model.predict_combination(random_forest_model, combination.dict())
+    return {"proba gain": probability, 
+            "proba perte": 1-probability}
+
+
+
+
+@app.get("/api/predict")
+async def generate_probable_combination():
+    """Generates a combination with a high probability of winning.
+
+    Returns:
+        dict: Combination dictionary (where keys are "N1", "N2", ... and values are combination numbers). 
+    """
+    return model.get_probable_combination(random_forest_model)
+
+@app.get("/api/model")
+async def get_model_information():
+    return {"metrique performance": model.PERFORMANCE_METRIC,
+            "nom algorithme": model.ALGORITHM,
+            "parametres entrainement": {
+                "nombre arbres": model.NUM_TREES,
+                "taille base test": model.TEST_SIZE
+                }
+            }
+
 
 @app.put("/api/model")
 async def add_data_to_model(added: Tirage):
@@ -68,16 +129,18 @@ async def add_data_to_model(added: Tirage):
     # if ((added.N1 < 1 or added.N1 > 50) or (added.N2 < 1 or added.N2 > 50) or (added.N3 < 1 or added.N3 > 50) or (added.N4 < 1 or added.N4 > 50) or (added.N5 < 1 or added.N5 > 50) or (added.E1 < 1 or added.E1 > 12) or (added.E2 < 1 or added.E2 > 12)):
     #     return {"Error message": "One of your number does not suit the requierement : N1 to N5 between 1 and 50, E1 et E2 between 1 and 12"}
 
-    baseDataframe = pd.read_csv(f'EuroMillions_numbers.csv', sep=';')
-
+    baseDataframe = pp.create_df('../data/EuroMillions_numbers.csv')
     addDataframe = model_to_dataframe(added)
-    
     baseDataframe = baseDataframe.append(addDataframe).reset_index(drop=True)
-    
-    baseDataframe.to_csv("test.csv", sep=';')
+    baseDataframe.to_csv(UPDATED_DATA_PATH, sep=';')
 
     return {"Validation message": "Your data has been correctly added to the dataset"}
 
+@app.post("/api/model/retrain")
+async def retrain_model():
+    global random_forest_model
+    random_forest_model = model.train_from_source(UPDATED_DATA_PATH)
+    return {"Validation message": "Model successfully retrained."}
 
 # J'ai définit l'api avec "app = FastAPI()" et mon fichier s'appelle "api.py". Donc pour lancer uvicorn il faut utiliser la commande terminale :
 #   > uvicorn api:app --reload (le reload permet de refresh les changements de manière dynamique)

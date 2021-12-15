@@ -8,11 +8,17 @@ This module contains four functions for preparing raw csv data for usage.
     combination = generate_random_combination()
     new_df = add_data(raw_df, 10)
     add_binary_winner_column(new_df)
+    df = preprocess("../data/EuroMillions_numbers.csv", 10)
+    comb_dict = combination_array_to_dict(combination)
 """
+
+
 
 
 import pandas as pd
 import numpy as np
+
+
 
 
 def create_df(file_path):
@@ -25,6 +31,8 @@ def create_df(file_path):
         pandas.core.frame.DataFrame.
     """
     return pd.read_csv(file_path, sep = ";")
+
+
 
 
 def generate_random_combination():
@@ -40,6 +48,28 @@ def generate_random_combination():
     N = np.random.randint(low = 1, high = 50+1, size=5)
     E = np.random.randint(low = 1, high = 12+1, size=2)
     return np.concatenate((N,E))
+
+
+
+
+def combination_array_to_dict(combination_array):
+    """Transforms combination array into dictionary.
+    
+    Args:
+        combination_array (numpy.ndarray): numpy array of combination.
+
+    Returns:
+        dict: dictionary where keys are "N1", ... and values are combination values.
+    """
+    return {"N1": int(combination_array[0]),
+            "N2": int(combination_array[1]),
+            "N3": int(combination_array[2]),
+            "N4": int(combination_array[3]),
+            "N5": int(combination_array[4]),
+            "E1": int(combination_array[5]),
+            "E2": int(combination_array[6])}
+
+
 
 
 def add_data(df, nb_new_combinations):
@@ -71,6 +101,9 @@ def add_data(df, nb_new_combinations):
     # shuffle data and return
     return df.sample(frac = 1).reset_index(drop = True)
 
+
+
+
 def add_binary_winner_column(df):
     """Adds 'Winner_binary' column to dataframe.
 
@@ -83,6 +116,9 @@ def add_binary_winner_column(df):
         df (pandas.core.frame.DataFrame): dataframe.
     """
     df["Winner_binary"] = df["Winner"].apply(lambda x: 1 if x >= 1 else 0)
+
+
+
 
 def preprocess(file_path, nb_new_combinations):
     """Preprocesses data from raw csv file.
