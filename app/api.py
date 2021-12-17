@@ -1,32 +1,93 @@
-"""A module for preprocessing raw csv data.
+"""API module.
 
-This module contains four functions for preparing raw csv data for usage.
-
-    Typical usage example:
-
-    raw_df = create_df("../data/EuroMillions_numbers.csv")
-    combination = generate_random_combination()
-    new_df = add_data(raw_df, 10)
-    add_binary_winner_column(new_df)
-    df = preprocess("../data/EuroMillions_numbers.csv", 10)
-    comb_dict = combination_array_to_dict(combination)
+This module contains code for defining the FastAPI api.
+The entirety of the api code can be found here:
+    - API definiton.
+    - Combination class definition.
+    - Draw class definition.
+    - api request functions.
+    
+What you can do with this API:
+    - Predict the probability of a combination being a win.
+    - Generate a combination with a high probability of winning.
+    - Get model information such as the algorithm and training hyperparameters.
+    - Add data to the dataset.
+    - Retrain the model with the new data added.
 """
 
 
+
+
+"""Imports."""
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 import pandas as pd
 import model 
 import preprocess_data as pp
+import pickle
+import datetime
 
-"""Initalize model."""
-DATA_PATH = "../data/EuroMillions_numbers.csv"
-UPDATED_DATA_PATH = "../data/updated_EuroMillions_numbers.csv"
-random_forest_model = model.train_from_source(DATA_PATH)
 
-app = FastAPI()
+
+
+"""API description."""
+description = """
+
+### A FastAPI app to make EuroMillions predictions.
+
+### What you can do with this API:
+- Predict the probability of a combination being a win (**POST** `/api/predict`).
+
+- Generate a combination with a high probability of winning (**GET** `/api/predict`).
+
+- Get model information such as the algorithm and training hyperparameters (**GET** `/api/model`).
+
+- Add data to the dataset (**PUT** `/api/model`).
+
+- Retrain the model with the new data added (**POST** `api/model/retrain`).
+"""
+
+
+
+
+"""Define API."""
+app = FastAPI(
+    title = "EuroMillionsPredictionAPI",
+    description = description,
+    contact={
+        "name": "Jesse Dingley | Damien Lalanne | Victor Maillot",
+        "email": "jesse.dingley@gmail.com"
+    }
+)
+
+
+
+
+"""Constants."""
+UPDATED_DATA_PATH = "../data/updated/updated_EuroMillions_numbers.csv"
+
+
+
+
+"""Get model."""
+with open("rf_model.pickle", "rb") as f:
+    random_forest_model = pickle.load(f)
+
+
+
 
 class Combination(BaseModel):
+    """Represents a combination (sequence of digits).
+
+    Attributes:
+        N1 (int): first 'N number' of combination (1 <= N1 <= 50)
+        N2 (int): second 'N number' of combination (1 <= N2 <= 50)
+        N3 (int): third 'N number' of combination (1 <= N3 <= 50)
+        N4 (int): fourth 'N number' of combination (1 <= N4 <= 50)
+        N5 (int): fifth 'N number' of combination (1 <= N5 <= 50)
+        E1 (int): first 'E number' of combination (1 <= E1 <= 12)  [BONUS NUMBER]     
+        E2 (int): second 'E number' of combination (1 <= E2 <= 12)  [BONUS NUMBER]
+    """
     N1: int = Field(default=1, ge=1, le=50, description="'Numéro' 1 need to be between 1 and 50", title="The first number of the combinaison")
     N2: int = Field(default=2, ge=1, le=50, description="'Numéro' 2 need to be between 1 and 50", title="The second number of the combinaison")
     N3: int = Field(default=3, ge=1, le=50, description="'Numéro' 3 need to be between 1 and 50", title="The third number of the combinaison")
@@ -35,29 +96,45 @@ class Combination(BaseModel):
     E1: int = Field(default=1, ge=1, le=12, description="'Etoile' 1 need to be between 1 and 12", title="The first bonus number of the combinaison")
     E2: int = Field(default=2, ge=1, le=12, description="'Etoile' 2 need to be between 1 and 12", title="The second bonus number of the combinaison")
 
-class Tirage(BaseModel):
-    Date: int # à changer pour mettre le type datetime
-    N1: int = Field(default=1, ge=1, le=50, description="'Numéro' 1 need to be between 1 and 50", title="The first number of the combinaison")
-    N2: int = Field(default=2, ge=1, le=50, description="'Numéro' 2 need to be between 1 and 50", title="The second number of the combinaison")
-    N3: int = Field(default=3, ge=1, le=50, description="'Numéro' 3 need to be between 1 and 50", title="The third number of the combinaison")
-    N4: int = Field(default=4, ge=1, le=50, description="'Numéro' 4 need to be between 1 and 50", title="The fourth number of the combinaison")
-    N5: int = Field(default=5, ge=1, le=50, description="'Numéro' 5 need to be between 1 and 50", title="The fifth number of the combinaison")
-    E1: int = Field(default=1, ge=1, le=12, description="'Etoile' 1 need to be between 1 and 12", title="The first bonus number of the combinaison")
-    E2: int = Field(default=2, ge=1, le=12, description="'Etoile' 2 need to be between 1 and 12", title="The second bonus number of the combinaison")
-    Winner: int = Field(default=0, ge=0, le=1, description="Winner need to be between 0 and 1", title="The combinaison has a winner or not")
-    Gain: int = Field(default=100_000, ge=100_000, le=230_000_000, description="Gain need to be between 100.000 and 230.000.000")
 
-def model_to_dataframe(model: Tirage):
-    newDataframe = pd.DataFrame(data= {'Date': [model.Date],
-                                        'N1': [model.N1],
-                                        'N2': [model.N2],
-                                        'N3': [model.N3],
-                                        'N4': [model.N4],
-                                        'N5': [model.N5],
-                                        'E1': [model.E1],
-                                        'E2': [model.E2],
-                                        'Winner': [model.Winner],
-                                        'Gain': [model.Gain]})
+
+
+class Tirage(Combination):
+    """Represents a draw.
+
+    Inherits the Combination class.
+
+    Attributes:
+        Date (datetime.date): date in format (yyyy-mm-dd).
+        Winner (int): number of winners for given draw.
+        Gain (int): amount of money won.
+    """
+    Date: datetime.date
+    Winner: int = Field(default=0, ge=0, description="Winner need to be at least 0", title="Number of winners for given combination.")
+    Gain: int = Field(default=100_000, ge=100_000, le=250_000_000, description="Gain need to be between 100.000 and 250.000.000", title = "Amount of money won.")
+
+
+
+
+def model_to_dataframe(draw: Tirage):
+    """Converts Tirage object to dataframe.
+
+    Args:
+        draw (Tirage): A draw.
+
+    Returns:
+        pandas.core.frame.DataFrame: converted draw object.
+    """
+    newDataframe = pd.DataFrame(data= {'Date': [draw.Date],
+                                        'N1': [draw.N1],
+                                        'N2': [draw.N2],
+                                        'N3': [draw.N3],
+                                        'N4': [draw.N4],
+                                        'N5': [draw.N5],
+                                        'E1': [draw.E1],
+                                        'E2': [draw.E2],
+                                        'Winner': [draw.Winner],
+                                        'Gain': [draw.Gain]})
     return newDataframe
 
 
@@ -93,8 +170,21 @@ async def generate_probable_combination():
     """
     return model.get_probable_combination(random_forest_model)
 
+
+
+
 @app.get("/api/model")
 async def get_model_information():
+    """Gets model information.
+
+    Returns a dictionary containing model information such as:
+        - Performance metric.
+        - Algorithm used.
+        - Training hyperparameters.
+
+    Returns:
+        dict
+    """
     return {"metrique performance": model.PERFORMANCE_METRIC,
             "nom algorithme": model.ALGORITHM,
             "parametres entrainement": {
@@ -104,47 +194,39 @@ async def get_model_information():
             }
 
 
+
+
 @app.put("/api/model")
 async def add_data_to_model(added: Tirage):
-    """Allow the user to add data in the dataset
+    """Adds new row to the dataset.
 
-        Input: object of type Tirage (automaticaly transforms your json input into a object of type Tirage) with shape :
-            `Date: int
-            N1: int
-            N2: int
-            N3: int
-            N4: int
-            N5: int
-            E1: int
-            E2: int
-            Winner: int
-            Gain: int`
+    Updates dataset csv file which is now the concatenation of the current dataset and the new row (a draw).
 
-        Returns:
-            json with shape :
-            `{"Validation message": <string>}`
+    Args:
+        added (Tirage): new draw to add.
 
+    Returns:
+        dict: Validation message.
     """
-
-    # if ((added.N1 < 1 or added.N1 > 50) or (added.N2 < 1 or added.N2 > 50) or (added.N3 < 1 or added.N3 > 50) or (added.N4 < 1 or added.N4 > 50) or (added.N5 < 1 or added.N5 > 50) or (added.E1 < 1 or added.E1 > 12) or (added.E2 < 1 or added.E2 > 12)):
-    #     return {"Error message": "One of your number does not suit the requierement : N1 to N5 between 1 and 50, E1 et E2 between 1 and 12"}
-
-    baseDataframe = pp.create_df('../data/EuroMillions_numbers.csv')
+    baseDataframe = pp.create_df(UPDATED_DATA_PATH)
     addDataframe = model_to_dataframe(added)
     baseDataframe = baseDataframe.append(addDataframe).reset_index(drop=True)
     baseDataframe.to_csv(UPDATED_DATA_PATH, sep=';')
-
     return {"Validation message": "Your data has been correctly added to the dataset"}
+
+
+
 
 @app.post("/api/model/retrain")
 async def retrain_model():
-    global random_forest_model
-    random_forest_model = model.train_from_source(UPDATED_DATA_PATH)
-    return {"Validation message": "Model successfully retrained."}
+    """Retrains a new model.
 
-# J'ai définit l'api avec "app = FastAPI()" et mon fichier s'appelle "api.py". Donc pour lancer uvicorn il faut utiliser la commande terminale :
-#   > uvicorn api:app --reload (le reload permet de refresh les changements de manière dynamique)
-# Une fois le serveur uvicorn lancé, il faut aller sur le localhost et rajouter dans l'url /docs
-# Ca permet de voir toute la doc générée grâce aux commentaires des fonctions et également de tester les méthodes selon les requêtes d'api définies.
-# Utiliser le bouton "Try it out" pour vérifier que la méthode fonctionne bien. Cela fourni aussi la commande utilisée pour requêter l'api (la commande curl)
-# Il suffit de copier cette commande dans un 2nd terminal (le premier héberge le serveur uvicorn) et vérifier que tout marche bien :)
+    Retrains the random forest model and saves it to a pickle file for later usage.
+
+    Returns:
+        dict: validation message.
+    """
+    new_random_forest_model = model.train_from_source(UPDATED_DATA_PATH)
+    with open("rf_model.pickle", "wb") as f:
+        pickle.dump(new_random_forest_model, f)
+    return {"Validation message": "Model successfully retrained."}
