@@ -1,18 +1,13 @@
 # EuroMillionsPredictionAPI
 
-bonsoir on est là
+### Installation
 
-bisous
+1. Create a virtual environment and install the required packages (`pip install -r requirements.txt`)
+2. Go to the `EuroMillionsPredictionAPI/app` directory
+3. execute `uvicorn api:app --reload`
+4. In a browser open `http://localhost:8000/docs`
+5. Try out the API.
 
-list de trucs à faire:
- - faut reussizr a corriger le requiremets.txt (comment ajouter "fastapi[all]"????) POUR LES PACKAGES PYTHON
- - verif quon a rien oublié
- - chck tout marche
- - finir doc
- - faire readme
+### Technical choices
 
-je crois c tout
-
-aussi relire le sujet pour check que le rendu suit son format etc
-
-je commit ce readme là ??
+- 
