@@ -10,4 +10,5 @@
 
 ### Technical choices
 
-- 
+- We have implemented a random forest to make predictions because it's a small model and the data has qualitative features.
+- /arguments
