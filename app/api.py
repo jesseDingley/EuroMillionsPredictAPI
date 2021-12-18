@@ -210,8 +210,8 @@ async def add_data_to_model(added: Tirage):
     """
     baseDataframe = pp.create_df(UPDATED_DATA_PATH)
     addDataframe = model_to_dataframe(added)
-    baseDataframe = baseDataframe.append(addDataframe).reset_index(drop=True)
-    baseDataframe.to_csv(UPDATED_DATA_PATH, sep=';')
+    baseDataframe = baseDataframe.append(addDataframe, ignore_index=True).reset_index(drop=True)
+    baseDataframe.to_csv(UPDATED_DATA_PATH, sep=';', index = False)
     return {"Validation message": "Your data has been correctly added to the dataset"}
 
 
