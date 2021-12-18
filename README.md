@@ -1,4 +1,5 @@
 # EuroMillionsPredictionAPI
+Jesse Dingley, Damien Lalanne, Victor Maillot
 
 ### Installation
 
