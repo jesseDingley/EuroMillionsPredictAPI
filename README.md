@@ -9,6 +9,13 @@ Jesse Dingley, Damien Lalanne, Victor Maillot
 4. In a browser open `http://localhost:8000/docs`
 5. Try out the API.
 
+### Usage:
+- Predict the probability of a combination being a win (**POST** `/api/predict`).
+- Generate a combination with a high probability of winning (**GET** `/api/predict`).
+- Get model information such as the algorithm and training hyperparameters (**GET** `/api/model`).
+- Add data to the dataset (**PUT** `/api/model`).
+- Retrain the model with the new data added (**POST** `api/model/retrain`).
+
 ### Technical choices
 
 - We have implemented a **random forest** model to make predictions because it's a small and efficient model. Another reason we chose this model is because we have **qualitative features** in the data (a draw is a sequence of random numbers that don't represent quantitative data).
