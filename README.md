@@ -24,7 +24,7 @@ Jesse Dingley, Damien Lalanne, Victor Maillot
     - `app/model.py`: module for training and testing Euromillions prediction model.
     - `app/preprocess_data.py`: module for preprocessing raw csv data to be able to use it for training.
     - `app/api.py`: API module.
-    - 
+    
 - We use **pickle** to serialize and save our model so we don't have to retrain it at each launch. The model can be found in `rf_model.pickle`.
 
 - Data is stored in two files:
