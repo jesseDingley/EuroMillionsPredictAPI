@@ -33,3 +33,7 @@ Jesse Dingley, Damien Lalanne, Victor Maillot
 
    In `/original` we keep the original .csv for reference just in case.
    In  `/updated` we keep a copy of the original .csv which is updated  every time new data is added.
+   
+### Note
+
+Due to the random nature of EuroMillions and so the data we have as well, our model will never be able to learn concrete patterns from the data. So predictions will be more or less random. So the more data we add to the model, the even harder it is to learn patterns from the data. This reflects the reality of this game (billions of possible draw combinations). 
