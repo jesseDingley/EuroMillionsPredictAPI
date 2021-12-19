@@ -140,7 +140,7 @@ def model_to_dataframe(draw: Tirage):
 
 
 
-@app.post("/api/predict")
+@app.post("/api/predict", tags = ["POST"])
 async def predict_combination(combination: Combination):
     """Predicts the probability of a combination being a win.
 
@@ -155,13 +155,13 @@ async def predict_combination(combination: Combination):
         dict: Dictionary containing the two probabilities (where values are between 0 and 1).
     """
     probability = model.predict_combination(random_forest_model, combination.dict())
-    return {"proba gain": probability, 
-            "proba perte": 1-probability}
+    return {"win probability": probability, 
+            "lose probability": 1-probability}
 
 
 
 
-@app.get("/api/predict")
+@app.get("/api/predict", tags = ["GET"])
 async def generate_probable_combination():
     """Generates a combination with a high probability of winning.
 
@@ -173,7 +173,7 @@ async def generate_probable_combination():
 
 
 
-@app.get("/api/model")
+@app.get("/api/model", tags = ["GET"])
 async def get_model_information():
     """Gets model information.
 
@@ -185,18 +185,18 @@ async def get_model_information():
     Returns:
         dict
     """
-    return {"metrique performance": model.PERFORMANCE_METRIC,
-            "nom algorithme": model.ALGORITHM,
-            "parametres entrainement": {
-                "nombre arbres": model.NUM_TREES,
-                "taille base test": model.TEST_SIZE
+    return {"peformance metric": model.PERFORMANCE_METRIC,
+            "algorithm name": model.ALGORITHM,
+            "training parameters": {
+                "number of trees": model.NUM_TREES,
+                "test size": model.TEST_SIZE
                 }
             }
 
 
 
 
-@app.put("/api/model")
+@app.put("/api/model", tags = ["PUT"])
 async def add_data_to_model(added: Tirage):
     """Adds new row to the dataset.
 
@@ -217,7 +217,7 @@ async def add_data_to_model(added: Tirage):
 
 
 
-@app.post("/api/model/retrain")
+@app.post("/api/model/retrain", tags = ["POST"])
 async def retrain_model():
     """Retrains a new model.
 
