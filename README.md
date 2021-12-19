@@ -7,7 +7,7 @@ Jesse Dingley, Damien Lalanne, Victor Maillot
 2. Go to the `/app` directory
 3. execute the command `$ uvicorn api:app --reload`
 4. In a browser open `http://localhost:8000/docs`
-5. Try out the API.
+5. Try out the API
 
 ### Usage:
 - Predict the probability of a combination being a win (**POST** `/api/predict`).
